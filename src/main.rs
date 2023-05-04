@@ -8,20 +8,24 @@ mod component;
 mod style;
 
 fn path_comp() -> Component {
-    let path_sel = "[[%~]]";
-    Component::text(path_sel.to_owned()).style(Style::new().fg(Colour::Gray50).bg(Colour::Gray100))
+    let path_sel = "%~";
+    Component::text(path_sel.to_owned())
+        .style(Style::new().fg(Colour::Gray100).bg(Colour::Gray50).bold())
 }
 
 fn components() -> Vec<Component> {
     vec![path_comp()]
 }
 fn join_comps(comps: &[Component], sep: &str) -> String {
-    comps
-        .iter()
-        .map(|c| c.render())
-        .collect::<Vec<_>>()
-        .join(sep)
-        + sep
+    comps.iter().fold(String::new(), |s, c| {
+        let r = c.clone().render();
+        let mut sep_style = c.get_style().clone().no_bg();
+        if let Some(bg) = c.get_style().get_bg() {
+            sep_style = sep_style.fg(*bg);
+        }
+        let sep = Component::text(sep.to_owned()).style(sep_style);
+        s + &r + &sep.render()
+    })
 }
 const POWERLINE_SEP: &str = "";
 const PROMPT_CHARS: [char; 11] = ['€', '#', '$', 'λ', '!', ':', '?', '\\', '/', '«', '*'];
@@ -40,7 +44,7 @@ fn prompt_comp(chars: &[char], colours: &[Colour]) -> Component {
 
     let prefix = chars.choose(&mut thread_rng()).unwrap();
     let colour = colours.choose(&mut thread_rng()).unwrap();
-    Component::text(format!("{} ", prefix)).style(Style::new().fg(*colour))
+    Component::text(format!("{}> ", prefix)).style(Style::new().fg(*colour).bold())
 }
 
 fn main() {

@@ -18,6 +18,9 @@ impl Style {
     pub fn new() -> Self {
         Self::default()
     }
+    pub fn get_bg(&self) -> Option<&Colour> {
+        self.bg.as_ref()
+    }
     pub fn render(&self, wrap: &str) -> String {
         let mut s = wrap.to_owned();
         if self.bold {
@@ -51,6 +54,10 @@ impl Style {
     }
     pub fn fg(mut self, fg: Colour) -> Self {
         self.fg.replace(fg);
+        self
+    }
+    pub fn no_bg(mut self) -> Self {
+        self.bg.take();
         self
     }
     pub fn bg(mut self, bg: Colour) -> Self {
