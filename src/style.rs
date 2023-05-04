@@ -49,12 +49,12 @@ impl Style {
         self.bold = true;
         self
     }
-    pub fn fg<C: Into<Colour>>(mut self, fg: C) -> Self {
-        self.fg.replace(fg.into());
+    pub fn fg(mut self, fg: Colour) -> Self {
+        self.fg.replace(fg);
         self
     }
-    pub fn bg<C: Into<Colour>>(mut self, bg: C) -> Self {
-        self.bg.replace(bg.into());
+    pub fn bg(mut self, bg: Colour) -> Self {
+        self.bg.replace(bg);
         self
     }
     pub fn italic(mut self) -> Self {
