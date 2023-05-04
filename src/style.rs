@@ -19,7 +19,7 @@ impl Style {
         Self::default()
     }
     pub fn render(&self, wrap: &str) -> String {
-        let mut s = String::new();
+        let mut s = wrap.to_owned();
         if self.bold {
             s = format!("%B{s}%b")
         }

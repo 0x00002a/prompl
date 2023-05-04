@@ -21,6 +21,7 @@ fn join_comps(comps: &[Component], sep: &str) -> String {
         .map(|c| c.render())
         .collect::<Vec<_>>()
         .join(sep)
+        + sep
 }
 const POWERLINE_SEP: &str = "";
 
