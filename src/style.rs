@@ -31,7 +31,7 @@ impl Style {
         }
         if let Some(fg) = self.fg {
             let mut sv = "%F{".to_owned();
-            sv += &fg.code().to_string();
+            sv += &fg.to_string();
             sv.push_str("}");
             sv += &s;
             sv.push_str("%f");
@@ -39,7 +39,7 @@ impl Style {
         }
         if let Some(bg) = self.bg {
             let mut sv = "%K{".to_owned();
-            sv += &bg.code().to_string();
+            sv += &bg.to_string();
             sv.push_str("}");
             sv += &s;
             sv.push_str("%k");
@@ -52,16 +52,16 @@ impl Style {
         self.bold = true;
         self
     }
-    pub fn fg(mut self, fg: Colour) -> Self {
-        self.fg.replace(fg);
+    pub fn fg<C: Into<Colour>>(mut self, fg: C) -> Self {
+        self.fg.replace(fg.into());
         self
     }
     pub fn no_bg(mut self) -> Self {
         self.bg.take();
         self
     }
-    pub fn bg(mut self, bg: Colour) -> Self {
-        self.bg.replace(bg);
+    pub fn bg(mut self, bg: impl Into<Colour>) -> Self {
+        self.bg.replace(bg.into());
         self
     }
     pub fn italic(mut self) -> Self {

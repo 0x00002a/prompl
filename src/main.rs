@@ -5,7 +5,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-use colours::Colour;
+use colours::{Basic, Colour, C256};
 use component::Component;
 use rand::{seq::SliceRandom, thread_rng};
 use style::Style;
@@ -17,7 +17,7 @@ mod style;
 fn path_comp() -> Component {
     let path_sel = "%~";
     Component::text(path_sel.to_owned())
-        .style(Style::new().fg(Colour::Gray100).bg(Colour::Gray50).bold())
+        .style(Style::new().fg(C256::Gray100).bg(C256::Gray50).bold())
 }
 fn git_comp() -> Option<Component> {
     let cmd = Command::new("git")
@@ -41,7 +41,7 @@ fn git_comp() -> Option<Component> {
     branch.pop();
     Some(
         Component::text(format!("\u{e0a0} {}", branch))
-            .style(Style::new().bg(Colour::SkyBlue1).fg(Colour::Gray3).bold()),
+            .style(Style::new().bg(C256::SkyBlue1).fg(C256::Gray3).bold()),
     )
 }
 
@@ -73,12 +73,12 @@ fn join_comps(comps: &[Component], sep: &str) -> String {
 const POWERLINE_SEP: &str = "";
 const PROMPT_CHARS: [char; 11] = ['€', '#', '$', 'λ', '!', ':', '?', '\\', '/', '«', '*'];
 const PROMPT_COLOURS: [Colour; 6] = [
-    Colour::SeaGreen,
-    Colour::MintyRose,
-    Colour::Plum,
-    Colour::SteelBlue,
-    Colour::RosyBrown,
-    Colour::Silver,
+    Colour::C256(C256::SeaGreen),
+    Colour::C256(C256::MintyRose),
+    Colour::C256(C256::Plum),
+    Colour::C256(C256::SteelBlue),
+    Colour::C256(C256::RosyBrown),
+    Colour::C256(C256::Silver),
 ];
 
 fn prompt_comp(chars: &[char], colours: &[Colour]) -> Component {
@@ -87,8 +87,19 @@ fn prompt_comp(chars: &[char], colours: &[Colour]) -> Component {
 
     let prefix = chars.choose(&mut thread_rng()).unwrap();
     let colour = colours.choose(&mut thread_rng()).unwrap();
-    Component::text(format!("{}> ", prefix)).style(Style::new().fg(*colour).bold())
+    let prefix_style = Style::new().fg(*colour);
+    let prefix = Component::text(prefix.to_string()).style(prefix_style.clone());
+    let suffix_base = Component::text(">".to_owned());
+    let suffix = exit_code_switch(
+        &suffix_base.clone().style(prefix_style.clone()),
+        &suffix_base.style(prefix_style.fg(Basic::Red)),
+    );
+    Component::text(format!("{}{} ", prefix.render(), suffix.render())).style(Style::new().bold())
 }
+fn exit_code_switch(success: &Component, failure: &Component) -> Component {
+    Component::text(format!("%(?.{0}.{1})", success.render(), failure.render()))
+}
+
 fn gen_prompt() -> String {
     let status = join_comps(&components(), POWERLINE_SEP);
     let prompt = prompt_comp(&PROMPT_CHARS, &PROMPT_COLOURS).render();
