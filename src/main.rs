@@ -89,9 +89,31 @@ fn prompt_comp(chars: &[char], colours: &[Colour]) -> Component {
     let colour = colours.choose(&mut thread_rng()).unwrap();
     Component::text(format!("{}> ", prefix)).style(Style::new().fg(*colour).bold())
 }
-
-fn main() {
+fn gen_prompt() -> String {
     let status = join_comps(&components(), POWERLINE_SEP);
     let prompt = prompt_comp(&PROMPT_CHARS, &PROMPT_COLOURS).render();
-    print!("{}\n{}", status, prompt)
+    status + "\n" + &prompt
+}
+
+fn main() {
+    std::panic::set_hook(Box::new(|i| {
+        let v = i.payload();
+        let msg = if let Some(v) = v.downcast_ref::<String>() {
+            Some(v.to_owned())
+        } else if let Some(v) = v.downcast_ref::<&str>() {
+            Some(v.to_owned().to_owned())
+        } else {
+            None
+        };
+        let msg = msg.unwrap_or("unknown".to_owned());
+        print!(
+            "panic during prompt generation: {} at {}\n> ",
+            msg,
+            i.location().map(|l| l.to_string()).unwrap_or_default()
+        )
+    }));
+    let _ = std::panic::catch_unwind(|| {
+        let p = gen_prompt();
+        print!("{}", p);
+    });
 }
