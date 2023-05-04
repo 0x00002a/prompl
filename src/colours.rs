@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[allow(unused)]
 pub enum C256 {
     SeaGreen = 108,
     MintyRose = 181,

@@ -64,6 +64,7 @@ impl Style {
         self.bg.replace(bg.into());
         self
     }
+    #[allow(unused)]
     pub fn italic(mut self) -> Self {
         self.italic = true;
         self
