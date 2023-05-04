@@ -20,13 +20,16 @@ fn path_comp() -> Component {
         .style(Style::new().fg(Colour::Gray100).bg(Colour::Gray50).bold())
 }
 fn git_comp() -> Option<Component> {
-    let mut root = Command::new("git")
+    let cmd = Command::new("git")
         .arg("rev-parse")
         .arg("--show-toplevel")
         .stderr(Stdio::null())
         .output()
-        .ok()?
-        .stdout;
+        .ok()?;
+    if !cmd.status.success() || cmd.stdout.is_empty() {
+        return None;
+    }
+    let mut root = cmd.stdout;
     if root[root.len() - 1] as char == '\n' {
         root.pop();
     }
@@ -36,7 +39,10 @@ fn git_comp() -> Option<Component> {
     head.read_to_string(&mut headref).ok()?;
     let mut branch = headref.split("/").last()?.to_owned();
     branch.pop();
-    Some(Component::text(branch).style(Style::new().bg(Colour::SkyBlue1).fg(Colour::Gray3).bold()))
+    Some(
+        Component::text(format!("\u{e0a0} {}", branch))
+            .style(Style::new().bg(Colour::SkyBlue1).fg(Colour::Gray3).bold()),
+    )
 }
 
 fn components() -> Vec<Component> {
@@ -50,7 +56,7 @@ fn join_comps(comps: &[Component], sep: &str) -> String {
     let mut out = Vec::new();
     for n in 0..comps.len() {
         let c = &comps[n];
-        let r = c.clone().render();
+        let r = c.clone().append(" ").render();
         let mut sep_style = c.get_style().clone().no_bg();
         if let Some(bg) = c.get_style().get_bg() {
             sep_style = sep_style.fg(*bg);
@@ -58,7 +64,7 @@ fn join_comps(comps: &[Component], sep: &str) -> String {
         if let Some(bg) = comps.get(n + 1).and_then(|c| c.get_style().get_bg()) {
             sep_style = sep_style.bg(*bg);
         }
-        let sep = Component::text(sep.to_owned()).style(sep_style);
+        let sep = Component::text(format!("{} ", sep)).style(sep_style);
         out.push(r);
         out.push(sep.render());
     }
